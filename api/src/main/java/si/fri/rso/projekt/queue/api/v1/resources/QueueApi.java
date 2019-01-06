@@ -1,5 +1,6 @@
 package si.fri.rso.projekt.queue.api.v1.resources;
 
+import org.json.JSONObject;
 import si.fri.rso.projekt.queue.services.beans.QueueBean;
 import si.fri.rso.projekt.queue.models.Queue;
 
@@ -8,6 +9,7 @@ import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.List;
 
 @RequestScoped
 @Path("queues")
@@ -56,15 +58,15 @@ public class QueueApi {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getOrders() {
+    public Response getQueues() {
         return Response.ok(queueBean.getQueues()).build();
     }
 
     @GET
-    @Path("/{orderID}")
+    @Path("/{delivererID}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getOrdersbyID(@PathParam("orderID") Integer queueID) {
-        Queue queue = queueBean.getQueue(queueID);
+    public Response getQueuesbyDelivererID(@PathParam("delivererID") Integer delivererID) {
+        List<Queue> queue = queueBean.getQueue(delivererID);
 
         if(queue != null) {
             return Response.ok(queue).build();
@@ -72,5 +74,21 @@ public class QueueApi {
         else {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
+    }
+
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response createQueue(String queue) {
+        queueBean.createQueue(new JSONObject(queue));
+
+        return Response.status(Response.Status.CREATED).build();
+    }
+
+    @GET
+    @Path("/delete/{queueID}")
+    public Response deleteBuyer(@PathParam("queueID") Integer queueID) {
+        queueBean.deleteQueue(queueID);
+
+        return Response.status(Response.Status.OK).build();
     }
 }

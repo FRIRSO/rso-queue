@@ -1,5 +1,6 @@
 package si.fri.rso.projekt.queue.models;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
@@ -7,6 +8,7 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,12 +50,12 @@ public class MongoQueue {
         return results;
     }
 
-    public Queue getQueue(Integer queueID) {
+    public List<Queue> getQueue(Integer delivererID) {
         MongoClient client = connectDB();
         MongoDatabase db = client.getDatabase(DBName);
         MongoCollection<Document> bc = db.getCollection(DBCollection);
 
-        Bson filter = Filters.eq("delivererID", queueID);
+        Bson filter = Filters.eq("delivererID", delivererID);
 
         Document result = bc.find(filter).first();
 
@@ -61,9 +63,43 @@ public class MongoQueue {
             return null;
         }
 
+        List<Queue> results = new ArrayList<>();
 
-        return new Queue(result.getInteger("delivererID"),
+        for(Document curr : bc.find(filter)) {
+
+            Queue queue = new Queue(curr.getInteger("delivererID"),
+                    curr.getInteger("queueID"),
+                    curr.getInteger("orderID"));
+
+            results.add(queue);
+        }
+
+        return results;
+
+        /*return new Queue(result.getInteger("delivererID"),
                 result.getInteger("queueID"),
-                result.getInteger("orderID"));
+                result.getInteger("orderID"));*/
+    }
+
+    public void createQueue(JSONObject json) {
+        MongoClient client = connectDB();
+        MongoDatabase db = client.getDatabase(DBName);
+        MongoCollection<Document> bc = db.getCollection(DBCollection);
+
+        Document myDoc = bc.find().sort(new BasicDBObject("queueID",-1)).first();
+        int last = myDoc.getInteger("queueID");
+
+        Document doc = Document.parse(json.toString());
+        doc.append("queueID", last + 1);
+        bc.insertOne(doc);
+    }
+
+    public void deleteQueue(int queueID) {
+        MongoClient client = connectDB();
+        MongoDatabase db = client.getDatabase(DBName);
+        MongoCollection<Document> bc = db.getCollection(DBCollection);
+
+        Bson filter = Filters.eq("queueID", queueID);
+        bc.deleteOne(filter);
     }
 }

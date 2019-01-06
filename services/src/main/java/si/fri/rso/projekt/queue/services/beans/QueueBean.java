@@ -3,6 +3,7 @@ package si.fri.rso.projekt.queue.services.beans;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kumuluz.ee.discovery.annotations.DiscoverService;
 //import si.fri.rso.projekt.buyers.models.Buyer;
+import org.json.JSONObject;
 import si.fri.rso.projekt.queue.services.configuration.AppProperties;
 import si.fri.rso.projekt.queue.models.MongoQueue;
 import si.fri.rso.projekt.queue.models.Queue;
@@ -102,15 +103,27 @@ public class QueueBean {
         return mb.getAllQueues();
     }
 
-    public Queue getQueue(Integer queueID) {
+    public List<Queue> getQueue(Integer delivererID) {
         MongoQueue mb = new MongoQueue();
 
-        Queue queue = mb.getQueue(queueID);
+       // Queue queue = mb.getQueue(queueID);
 
-        if(queueID == null) {
-            return null;
-        }
+//        if(queueID == null) {
+//            return null;
+//        }
 
-        return queue;
+        return mb.getQueue(delivererID);
+    }
+
+    public void createQueue(JSONObject json) {
+        MongoQueue mq = new MongoQueue();
+
+        mq.createQueue(json);
+    }
+
+    public void deleteQueue(int queueID) {
+        MongoQueue mq = new MongoQueue();
+
+        mq.deleteQueue(queueID);
     }
 }
